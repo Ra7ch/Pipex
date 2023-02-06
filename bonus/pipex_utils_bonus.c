@@ -6,7 +6,7 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 20:09:09 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/03 22:44:57 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/06 03:59:52 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int	*fd_files(char **argv)
 	if (fd[0] == -1)
 		perror(argv[1]);
 	if (fd[1] == -1)
-		(perror(argv[i]), exit(1));
+		(perror(argv[i]));
 	return (fd);
 }
 
@@ -90,18 +90,11 @@ void	check_command(char **commands, char **paths, int k)
 	char	**cmd;
 
 	cmd = ft_split(commands[k], ' ');
-	if (access(cmd[0], F_OK) == -1)
+	if (access(cmd[0], F_OK) == -1 || check_access(cmd[0]))
 	{
 		j = check_command_path(commands, paths, cmd, k);
 		if (paths[j] == NULL)
-		{
-			ft_free(cmd);
-			free(cmd);
-			ft_free(paths);
-			ft_putstr_fd(commands[k], 2);
-			ft_putstr_fd(": Command not found\n", 2);
-			exit(127);
-		}
+			if_its_command(commands[k], cmd, paths);
 	}
 	free(cmd);
 	ft_free(paths);

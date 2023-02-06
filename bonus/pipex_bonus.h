@@ -6,7 +6,7 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 20:07:26 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/04 22:56:40 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/06 03:59:22 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,24 +15,32 @@
 
 # include "../Libft/libft.h"
 # include "fcntl.h"
+# include "get_next_line.h"
 # include "stdio.h"
 # include "stdlib.h"
 # include "string.h"
 # include "unistd.h"
 # include <sys/wait.h>
 
-char	**paths(char **env);
-int		*fd_files(char **argv);
-void	ft_free(char **str);
-char	**ft_commands(char **argv);
-void	check_command(char **commands, char **paths, int k);
-char	**heredoc_commands(char **argv);
+typedef struct s_array
+{
+	char	**argv;
+	char	**env;
+	char	**path;
+	char	**commands;
+}			t_array;
 
-void	heredoc_initialize(char **path, int **fdp, char **commands,
-			char **argv);
-void	ft_status(int *pid, int j, int **fdp);
-int		ft_fork(char **commands, int **fdp, char **paths, int j);
-void	execute(char **commands, int j);
-char	*ft_kamel(int fd, char **argv);
+char		**paths(char **env);
+int			*fd_files(char **argv);
+void		ft_free(char **str);
+char		**ft_commands(char **argv);
+void		check_command(char **commands, char **paths, int k);
+char		**heredoc_commands(char **argv);
+void		heredoc_initialize(t_array *a, int **fdp);
+void		ft_status(int *pid, int j, int **fdp);
+void		execute(t_array *a, int j, int fd);
+void		ft_read(char **argv, int fd);
+int			check_access(char *cmd);
+void		if_its_command(char *cmd, char **s, char **paths);
 
 #endif

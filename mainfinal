@@ -1,45 +1,47 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   main_bonus.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 20:06:57 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/06 04:09:51 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/06 01:48:05 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "pipex_bonus.h"
 
-void	execute(t_array *a, int j)
+void	execute(char **commands, int j, char **paths, int fd)
 {
 	char	**cmd;
 	int		i;
 
 	i = 0;
-	cmd = ft_split(a->commands[j], ' ');
-	execve(cmd[0], cmd, a->env);
+	while (commands[++i])
+		;
+	if (j + 1 == i && fd < 0)
+		exit(1);
+	check_command(commands, paths, j);
+	cmd = ft_split(commands[j], ' ');
+	execve(cmd[0], cmd, NULL);
 	perror(cmd[0]);
 	ft_free(cmd);
 	free(cmd);
 	exit(126);
 }
 
-int	ft_fork(t_array *a, int **fdp, int j)
+int	ft_fork(char **commands, int **fdp, char **paths, int j)
 {
 	int	pid;
 	int	i;
 
 	i = 0;
-	while (a->commands[++i])
+	while (commands[++i])
 		;
 	pid = fork();
 	if (pid == 0)
 	{
-		if (j + 1 == i && fdp[0][1] < 0)
-			exit(1);
-		check_command(a->commands, a->path, j);
 		close(fdp[j + 1][0]);
 		if (fdp[j][0] == -1)
 			exit(0);
@@ -48,7 +50,7 @@ int	ft_fork(t_array *a, int **fdp, int j)
 			dup2(fdp[j + 1][1], 1);
 		else
 			dup2(fdp[0][1], 1);
-		execute(a, j);
+		execute(commands, j, paths, fdp[0][1]);
 	}
 	close(fdp[j][0]);
 	close(fdp[j + 1][1]);
@@ -73,30 +75,27 @@ void	ft_status(int *pid, int j, int **fdp)
 		i--;
 	}
 	free(pid);
-	if (WIFEXITED(status))
-		exit(WEXITSTATUS(status));
-	else
-		exit(1);
+	exit(WEXITSTATUS(status));
 }
 
-void	initialize(int **fdp, t_array *a)
+void	initialize(char **path, int **fdp, char **commands, char **argv)
 {
 	int	j;
 	int	i;
 	int	*pid;
 
 	i = 0;
-	while (a->commands[i])
+	while (commands[i])
 		i++;
 	fdp = malloc((i + 1) * sizeof(int *));
 	pid = malloc(i * sizeof(int));
-	fdp[0] = fd_files(a->argv);
+	fdp[0] = fd_files(argv);
 	j = 0;
 	while (j + 1 <= i)
 	{
 		fdp[j + 1] = malloc(2 * sizeof(int));
 		pipe(fdp[j + 1]);
-		pid[j] = ft_fork(a, fdp, j);
+		pid[j] = ft_fork(commands, fdp, path, j);
 		j++;
 	}
 	ft_status(pid, j, fdp);
@@ -105,16 +104,20 @@ void	initialize(int **fdp, t_array *a)
 int	main(int argc, char **argv, char **env)
 {
 	int		**fdp;
-	t_array	a;
+	char	**path;
+	char	**commands;
 
-	a.argv = argv;
-	a.env = env;
 	fdp = NULL;
-	if (argc == 5)
+	path = paths(env);
+	if (argc >= 5 && ft_memcmp(argv[1], "here_doc", 9) == 0)
 	{
-		a.path = paths(env);
-		a.commands = ft_commands(argv);
-		initialize(fdp, &a);
+		commands = heredoc_commands(argv);
+		heredoc_initialize(path, fdp, commands, argv);
+	}
+	if (argc >= 5)
+	{
+		commands = ft_commands(argv);
+		initialize(path, fdp, commands, argv);
 	}
 	else
 	{

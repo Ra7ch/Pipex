@@ -6,59 +6,34 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/04 22:54:21 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/04 23:16:50 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/06 02:44:54 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
-int	ft_kamel_condition(char *s, char **argv)
+void	ft_read(char **argv, int fd)
 {
+	int		i;
 	char	*buf;
 
-	if (s && ft_strlen(s) >= ft_strlen(argv[2]))
+	i = 0;
+	write(1, "pipe here_doc> ", 15);
+	while (1)
 	{
-		if (ft_strlen(s) == ft_strlen(argv[2]) + 1)
+		buf = NULL;
+		if (get_next_line(0, &buf) < 0)
+			exit(1);
+		if (!ft_memcmp(buf, argv[2], ft_strlen(argv[2]) + 1))
+			break ;
+		if (buf)
 		{
-			buf = ft_strjoin(argv[2], "\n");
-			if (!ft_memcmp(buf, s, ft_strlen(s)))
-				return (free(buf), 1);
-			free(buf);
+			write(fd, buf, ft_strlen2(buf));
+			write(fd, "\n", 1);
+			write(1, "pipe here_doc> ", 15);
 		}
-		buf = ft_strjoin("\n", argv[2]);
-		if (!ft_memcmp(buf, s + (ft_strlen(s) - ft_strlen(buf) - 1),
-				ft_strlen(buf)))
-			return (free(buf), 1);
 		free(buf);
 	}
-	return (0);
-}
-
-char	*ft_kamel(int fd, char **argv)
-{
-	char	buf[5];
-	char	*tmp;
-	char	*s;
-	int		i;
-	int		j;
-
-	s = NULL;
-	i = 1;
-	while (!ft_kamel_condition(s, argv))
-	{
-		i = read(fd, buf, 4);
-		if (i == -1)
-			break ;
-		buf[i] = '\0';
-		if (!s && !buf[0])
-			return (NULL);
-		j = ft_strlen(buf);
-		if (s)
-			j = j + ft_strlen(s);
-		tmp = s;
-		s = ft_strjoin(s, buf);
-		free(tmp);
-		s[j] = 0;
-	}
-	return (s);
+	free(buf);
+	close(fd);
 }

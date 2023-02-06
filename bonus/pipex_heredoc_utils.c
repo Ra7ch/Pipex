@@ -6,7 +6,7 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 23:51:32 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/04 23:47:46 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/06 02:20:26 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,18 +32,17 @@ char	**heredoc_commands(char **argv)
 	return (commands);
 }
 
-int	heredoc_fork(char **commands, int **fdp, char **paths, int j)
+int	heredoc_fork(t_array *a, int **fdp, int j)
 {
 	int	pid;
 	int	i;
 
 	i = 0;
-	while (commands[++i])
+	while (a->commands[++i])
 		;
 	pid = fork();
 	if (pid == 0)
 	{
-		check_command(commands, paths, j);
 		close(fdp[j + 1][0]);
 		if (j && j + 1 == i)
 			close(fdp[j][1]);
@@ -54,7 +53,7 @@ int	heredoc_fork(char **commands, int **fdp, char **paths, int j)
 			dup2(fdp[j + 1][1], 1);
 		else
 			dup2(fdp[i + 1][0], 1);
-		execute(commands, j);
+		execute(a, j, fdp[i + 1][0]);
 	}
 	close(fdp[j][0]);
 	close(fdp[j + 1][1]);
@@ -86,34 +85,36 @@ void	heredoc_status(int *pid, int j, int **fdp)
 	close(fdp[0][1]);
 	close(fdp[i + 1][0]);
 	while (i < j)
-	{
-		waitpid(pid[i], &status, 0);
 		i++;
+	i--;
+	waitpid(pid[i], &status, 0);
+	i--;
+	while (i >= 0)
+	{
+		waitpid(pid[i], 0, 0);
+		i--;
 	}
 	free(pid);
 	exit(WEXITSTATUS(status));
 }
 
-void	heredoc_initialize(char **path, int **fdp, char **commands, char **argv)
+void	heredoc_initialize(t_array *a, int **fdp)
 {
-	int		j;
-	int		i;
-	int		*pid;
-	char	*s;
+	int	j;
+	int	i;
+	int	*pid;
 
 	i = 0;
-	while (commands[i])
+	while (a->commands[i])
 		i++;
 	fdp = malloc((i + 2) * sizeof(int *));
 	pid = malloc(i * sizeof(int));
-	heredoc_fd_files(argv, fdp, i);
-	s = ft_kamel(0, argv);
+	heredoc_fd_files(a->argv, fdp, i);
+	ft_read(a->argv, fdp[0][1]);
 	j = 0;
-	if (j == 0)
-		(ft_putstr_fd(s, fdp[0][1]), close(fdp[0][1]), free(s));
 	while (j + 1 <= i)
 	{
-		pid[j] = heredoc_fork(commands, fdp, path, j);
+		pid[j] = heredoc_fork(a, fdp, j);
 		j++;
 	}
 	heredoc_status(pid, j, fdp);
