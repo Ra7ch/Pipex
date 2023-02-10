@@ -1,4 +1,4 @@
-/* ************************************************************************** */
+/* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
@@ -6,7 +6,7 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 20:06:57 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/06 04:09:51 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/07 02:54:40 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,25 @@
 void	execute(t_array *a, int j)
 {
 	char	**cmd;
-	int		i;
+	int		fd2;
+	int		fd[2];
+	char	*s;
 
-	i = 0;
+	fd2 = dup(2);
 	cmd = ft_split(a->commands[j], ' ');
 	execve(cmd[0], cmd, a->env);
+	pipe(fd);
+	dup2(fd[1], 2);
 	perror(cmd[0]);
+	get_next_line(fd[0], &s);
+	dup2(fd2, 2);
+	close(fd[0]);
+	close(fd[1]);
+	if (ft_strnstr(s, "Permission denied", ft_strlen(s)))
+		(perror(cmd[0]), ft_free(cmd), free(cmd), exit(126));
 	ft_free(cmd);
 	free(cmd);
-	exit(126);
+	exit(0);
 }
 
 int	ft_fork(t_array *a, int **fdp, int j)

@@ -6,7 +6,7 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 20:07:26 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/06 03:55:09 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/07 00:34:20 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define PIPEX_H
 
 # include "Libft/libft.h"
+# include "bonus/get_next_line.h"
 # include "fcntl.h"
 # include "stdio.h"
 # include "stdlib.h"

@@ -6,7 +6,7 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/06 22:34:12 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/06 02:43:56 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/07 00:22:08 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,14 +97,14 @@ char	*ft_kamel(int fd, char *s)
 int	get_next_line(int fd, char **l)
 {
 	char		*s;
-	static char	*st;
+	static char	*st[10240];
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || BUFFER_SIZE >= INT_MAX)
 		return (-1);
-	s = ft_kamel(fd, st);
+	s = ft_kamel(fd, st[fd]);
 	if (!s)
 		return (0);
 	*l = ft_lewel(s);
-	st = ft_tani(s);
+	st[fd] = ft_tani(s);
 	return (0);
 }

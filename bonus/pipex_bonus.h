@@ -6,7 +6,7 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 20:07:26 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/06 03:59:22 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/06 20:52:06 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,10 @@ void		check_command(char **commands, char **paths, int k);
 char		**heredoc_commands(char **argv);
 void		heredoc_initialize(t_array *a, int **fdp);
 void		ft_status(int *pid, int j, int **fdp);
-void		execute(t_array *a, int j, int fd);
+void		execute(t_array *a, int j);
 void		ft_read(char **argv, int fd);
 int			check_access(char *cmd);
 void		if_its_command(char *cmd, char **s, char **paths);
+void		heredoc_execute(t_array *a, int j, int fd);
 
 #endif

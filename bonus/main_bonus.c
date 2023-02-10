@@ -6,29 +6,34 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 20:06:57 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/06 02:36:33 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/06 23:21:05 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
-void	execute(t_array *a, int j, int fd)
+void	execute(t_array *a, int j)
 {
 	char	**cmd;
-	int		i;
+	int		fd2;
+	int		fd[2];
+	char	*s;
 
-	i = 0;
-	while (a->commands[++i])
-		;
-	if (j + 1 == i && fd < 0)
-		exit(1);
-	check_command(a->commands, a->path, j);
+	fd2 = dup(2);
 	cmd = ft_split(a->commands[j], ' ');
 	execve(cmd[0], cmd, a->env);
+	pipe(fd);
+	dup2(fd[1], 2);
 	perror(cmd[0]);
+	get_next_line(fd[0], &s);
+	dup2(fd2, 2);
+	close(fd[0]);
+	close(fd[1]);
+	if (ft_strnstr(s, "Permission denied", ft_strlen(s)))
+		(perror(cmd[0]), ft_free(cmd), free(cmd), exit(126));
 	ft_free(cmd);
 	free(cmd);
-	exit(126);
+	exit(0);
 }
 
 int	ft_fork(t_array *a, int **fdp, int j)
@@ -42,6 +47,9 @@ int	ft_fork(t_array *a, int **fdp, int j)
 	pid = fork();
 	if (pid == 0)
 	{
+		if (j + 1 == i && fdp[0][1] < 0)
+			exit(1);
+		check_command(a->commands, a->path, j);
 		close(fdp[j + 1][0]);
 		if (fdp[j][0] == -1)
 			exit(0);
@@ -50,7 +58,7 @@ int	ft_fork(t_array *a, int **fdp, int j)
 			dup2(fdp[j + 1][1], 1);
 		else
 			dup2(fdp[0][1], 1);
-		execute(a, j, fdp[0][1]);
+		execute(a, j);
 	}
 	close(fdp[j][0]);
 	close(fdp[j + 1][1]);

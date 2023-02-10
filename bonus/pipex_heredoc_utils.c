@@ -6,7 +6,7 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 23:51:32 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/06 02:20:26 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/06 21:21:36 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,10 @@ int	heredoc_fork(t_array *a, int **fdp, int j)
 	pid = fork();
 	if (pid == 0)
 	{
+		if (j + 1 == i && fdp[i + 1][0] < 0)
+			exit(1);
+		check_command(a->commands, a->path, j);
 		close(fdp[j + 1][0]);
-		if (j && j + 1 == i)
-			close(fdp[j][1]);
 		if (fdp[j][0] == -1)
 			exit(0);
 		dup2(fdp[j][0], 0);
@@ -53,7 +54,7 @@ int	heredoc_fork(t_array *a, int **fdp, int j)
 			dup2(fdp[j + 1][1], 1);
 		else
 			dup2(fdp[i + 1][0], 1);
-		execute(a, j, fdp[i + 1][0]);
+		execute(a, j);
 	}
 	close(fdp[j][0]);
 	close(fdp[j + 1][1]);
@@ -64,15 +65,15 @@ void	heredoc_fd_files(char **argv, int **fdp, int i)
 {
 	int	j;
 
-	j = 0;
+	j = 1;
 	while (j <= i)
 	{
-		fdp[j] = malloc(2 * sizeof(int));
-		pipe(fdp[j]);
 		j++;
 	}
 	fdp[j] = malloc(2 * sizeof(int));
 	fdp[j][0] = open(argv[i + 3], O_WRONLY | O_CREAT | O_APPEND, 0644);
+	if (fdp[j][0] < 0)
+		perror(argv[i + 3]);
 }
 
 void	heredoc_status(int *pid, int j, int **fdp)
@@ -109,11 +110,15 @@ void	heredoc_initialize(t_array *a, int **fdp)
 		i++;
 	fdp = malloc((i + 2) * sizeof(int *));
 	pid = malloc(i * sizeof(int));
-	heredoc_fd_files(a->argv, fdp, i);
+	fdp[0] = malloc(2 * sizeof(int));
+	pipe(fdp[0]);
 	ft_read(a->argv, fdp[0][1]);
+	heredoc_fd_files(a->argv, fdp, i);
 	j = 0;
 	while (j + 1 <= i)
 	{
+		fdp[j + 1] = malloc(2 * sizeof(int));
+		pipe(fdp[j + 1]);
 		pid[j] = heredoc_fork(a, fdp, j);
 		j++;
 	}

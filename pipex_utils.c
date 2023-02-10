@@ -6,7 +6,7 @@
 /*   By: raitmous <raitmous@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/03 20:09:09 by raitmous          #+#    #+#             */
-/*   Updated: 2023/02/06 03:58:41 by raitmous         ###   ########.fr       */
+/*   Updated: 2023/02/07 00:15:21 by raitmous         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ static int	check_command_path(char **commands, char **paths, char **cmd, int k)
 		if (access(path, F_OK) == 0)
 		{
 			free(path);
-			ft_free(cmd);
 			commands[k] = ft_strjoin(paths[j], commands[k]);
 			break ;
 		}
@@ -94,10 +93,9 @@ void	check_command(char **commands, char **paths, int k)
 	{
 		j = check_command_path(commands, paths, cmd, k);
 		if (paths[j] == NULL)
-		{
 			if_its_command(commands[k], cmd, paths);
-		}
 	}
+	ft_free(cmd);
 	free(cmd);
 	ft_free(paths);
 }
